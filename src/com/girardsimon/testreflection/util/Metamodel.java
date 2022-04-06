@@ -6,16 +6,18 @@ import com.girardsimon.testreflection.annotations.PrimaryKey;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
-public class Metamodel<T> {
+public class Metamodel {
 
-    private final Class<T> clss;
+    private final Class<?> clss;
 
-    public static <T> Metamodel<T> of(Class<T> clss) {
-        return new Metamodel<>(clss);
+    public static Metamodel of(Class<?> clss) {
+        return new Metamodel(clss);
     }
 
-    public Metamodel(Class<T> clss) {
+    public Metamodel(Class<?> clss) {
         this.clss = clss;
     }
 
@@ -45,5 +47,36 @@ public class Metamodel<T> {
             }
         }
         return columnFields;
+    }
+
+    public String buildInsertRequest() {
+        List<String> columnNames = buildColumnNames();
+
+        String columnElement = String.join(", ", columnNames);
+
+        String questionMarksElement = buildQuestionMarksElement();
+
+        return "INSERT INTO " + this.clss.getSimpleName() + "(" + columnElement + ") VALUES (" +  questionMarksElement + ")";
+    }
+
+    public String buildSelectRequest() {
+        List<String> columnNames = buildColumnNames();
+
+        String columnElement = String.join(", ", columnNames);
+
+        return "select " + columnElement + " from " + this.clss.getSimpleName() +
+                " where " + getPrimaryKey().getName() + " = ?";
+    }
+
+    private String buildQuestionMarksElement() {
+        int numbersOfColumns = getColumns().size() + 1;
+        return IntStream.range(0, numbersOfColumns).mapToObj(index -> "?").collect(Collectors.joining(", "));
+    }
+
+    private List<String> buildColumnNames() {
+        String primaryKeyColumnName = getPrimaryKey().getName();
+        List<String> columnNames = getColumns().stream().map(ColumnField::getName).collect(Collectors.toList());
+        columnNames.add(0, primaryKeyColumnName);
+        return columnNames;
     }
 }

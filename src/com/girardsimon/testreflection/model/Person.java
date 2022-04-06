@@ -5,11 +5,11 @@ import com.girardsimon.testreflection.annotations.PrimaryKey;
 
 public class Person {
 
-    @PrimaryKey
+    @PrimaryKey(name = "k_id")
     private long id;
-    @Column
+    @Column(name = "c_age")
     private int age;
-    @Column
+    @Column(name="c_name")
     private String name;
 
     public Person() {
@@ -19,7 +19,6 @@ public class Person {
         this.age = age;
         this.name = name;
     }
-
     public static Person of(int age, String name) {
         return new Person(age, name);
     }
@@ -51,7 +50,8 @@ public class Person {
     @Override
     public String toString() {
         return "Person{" +
-                "age=" + age +
+                "id=" + id +
+                ", age=" + age +
                 ", name='" + name + '\'' +
                 '}';
     }
